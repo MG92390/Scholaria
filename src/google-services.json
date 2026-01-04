@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "425316631071",
+    "project_id": "scholaria-bdacd",
+    "storage_bucket": "scholaria-bdacd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425316631071:android:777a526501015417c60b2a",
+        "android_client_info": {
+          "package_name": "com.ramielstudio.scholaria"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "425316631071-tjh908dhui5g9erpuatlrkroa0hu4puj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFPnRZwaGNdT5_kq10U2oTJjsfCo2ip7k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "425316631071-tjh908dhui5g9erpuatlrkroa0hu4puj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
