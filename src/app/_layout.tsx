@@ -10,7 +10,7 @@ export default function RootLayout() {
                 <Stack.Screen name="index" options={{ headerShown: false }} />
             </Stack.Protected>
             <Stack.Protected guard={true}>
-                <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+                <Stack.Screen name="AuthScreen" options={{ headerShown: false }} />
             </Stack.Protected>
         </Stack>
     </React.Fragment>

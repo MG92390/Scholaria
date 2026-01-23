@@ -5,7 +5,7 @@ import { LEVELS, PRIMAIRE_SUBLEVELS, COLLEGE_SUBLEVELS, LYCEE_SUBLEVELS, SUBJECT
 import VectorCoordinatesGame from './src/components/games/VectorCoordinatesGame';
 import VectorGamePlane from './src/components/games/VectorGamePlane';
 import FractionsGameCM1 from './src/components/games/FractionsGameCM1';
-import AuthScreen from './src/components/auth/AuthScreen';
+import AuthScreen from './src/app/AuthScreen';
 import Dashboard from './src/components/dashboard/Dashboard';
 import { useAuth } from './src/hooks/useAuth';
 
@@ -70,7 +70,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar style={Platform.OS === 'web' ? 'auto' : 'dark'} />
-      
+
       {loading ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Chargement...</Text>
@@ -78,8 +78,8 @@ export default function App() {
       ) : !user ? (
         <AuthScreen onAuthSuccess={() => setView('dashboard')} />
       ) : view === 'dashboard' ? (
-        <Dashboard 
-          user={user} 
+        <Dashboard
+          user={user}
           onLogout={() => {
             logout();
             setView('dashboard');
@@ -94,202 +94,202 @@ export default function App() {
               view === 'levels'
                 ? 'Scholaria - Apprentissage'
                 : view === 'primaire-sublevels'
-                ? 'Primaire - Choisir le niveau'
-                : view === 'college-sublevels'
-                ? 'Collège - Choisir le niveau'
-                : view === 'lycee-sublevels'
-                ? 'Lycée - Choisir le niveau'
-                : view === 'subjects'
-                ? `Matières — ${labelForLevel(selectedSubLevel || selectedLevel)}`
-                : view === 'content'
-                ? `${labelForSubject(selectedSubLevel || selectedLevel, selectedSubject)}`
-                : view === 'lesson'
-            ? 'Leçon'
-            : selectedLesson?.title || 'Quiz'
-        }
-        canGoBack={true}
-        onBack={goBack}
-      />
-
-      <SearchBar value={query} onChange={setQuery} visible={view !== 'content' && view !== 'quiz'} />
-
-      {view === 'levels' && (
-        <LevelsList
-          query={query}
-          onSelect={(lvl) => {
-            setSelectedLevel(lvl.id);
-            if (lvl.id === 'primaire') {
-              setView('primaire-sublevels');
-            } else if (lvl.id === 'college') {
-              setView('college-sublevels');
-            } else if (lvl.id === 'lycee') {
-              setView('lycee-sublevels');
-            } else {
-              setView('subjects');
+                  ? 'Primaire - Choisir le niveau'
+                  : view === 'college-sublevels'
+                    ? 'Collège - Choisir le niveau'
+                    : view === 'lycee-sublevels'
+                      ? 'Lycée - Choisir le niveau'
+                      : view === 'subjects'
+                        ? `Matières — ${labelForLevel(selectedSubLevel || selectedLevel)}`
+                        : view === 'content'
+                          ? `${labelForSubject(selectedSubLevel || selectedLevel, selectedSubject)}`
+                          : view === 'lesson'
+                            ? 'Leçon'
+                            : selectedLesson?.title || 'Quiz'
             }
-            setQuery('');
-          }}
-        />
-      )}
+            canGoBack={true}
+            onBack={goBack}
+          />
 
-      {view === 'primaire-sublevels' && (
-        <SubLevelsList
-          query={query}
-          subLevels={PRIMAIRE_SUBLEVELS}
-          onSelect={(subLevel) => {
-            setSelectedSubLevel(subLevel.id);
-            setView('subjects');
-            setQuery('');
-          }}
-        />
-      )}
+          <SearchBar value={query} onChange={setQuery} visible={view !== 'content' && view !== 'quiz'} />
 
-      {view === 'college-sublevels' && (
-        <SubLevelsList
-          query={query}
-          subLevels={COLLEGE_SUBLEVELS}
-          onSelect={(subLevel) => {
-            setSelectedSubLevel(subLevel.id);
-            setView('subjects');
-            setQuery('');
-          }}
-        />
-      )}
-
-      {view === 'lycee-sublevels' && (
-        <SubLevelsList
-          query={query}
-          subLevels={LYCEE_SUBLEVELS}
-          onSelect={(subLevel) => {
-            setSelectedSubLevel(subLevel.id);
-            setView('subjects');
-            setQuery('');
-          }}
-        />
-      )}
-
-      {view === 'subjects' && (selectedLevel || selectedSubLevel) && (
-        <SubjectsList
-          level={selectedSubLevel || selectedLevel}
-          query={query}
-          onSelect={(subject) => {
-            setSelectedSubject(subject.id);
-            setView('content');
-          }}
-        />
-      )}
-
-      {view === 'content' && (selectedLevel || selectedSubLevel) && selectedSubject && (
-        <ContentList
-          level={selectedSubLevel || selectedLevel}
-          subject={selectedSubject}
-          progress={progress}
-          onViewLesson={(lesson) => {
-            setSelectedLesson(lesson);
-            setView('lesson');
-          }}
-          onStartQuiz={(lesson) => {
-            setSelectedLesson(lesson);
-            setView('quiz');
-          }}
-          onStartGame={(lesson) => {
-            setSelectedLesson(lesson);
-            setView('game');
-          }}
-        />
-      )}
-
-      {view === 'lesson' && selectedLesson && (
-        <LessonView
-          lesson={selectedLesson}
-          onBack={() => setView('content')}
-        />
-      )}
-
-      {view === 'quiz' && selectedLesson && (
-        <QuizView
-          lesson={selectedLesson}
-          onDone={(score) => {
-            if (selectedLesson?.id) {
-              const result = {
-                score: score.correct || score.score || 0,
-                total: score.total || score.questions?.length || 0,
-                timeSpent: score.timeSpent || 0,
-                lessonTitle: selectedLesson.title,
-                subject: selectedSubject,
-                level: selectedSubLevel || selectedLevel
-              };
-              updateProgress(selectedLesson.id, true, result);
-            }
-            setView('content');
-            setSelectedLesson(null);
-          }}
-          onOpenGame={() => {
-            // Open the associated game (keeps selectedLesson)
-            setView('game');
-          }}
-        />
-      )}
-
-      {view === 'game' && selectedLesson && (
-        <View style={{ flex: 1 }}>
-          {selectedLesson.id === '2nde-vecteurs' ? (
-            <VectorGamePlane
-              onGameEnd={(result) => {
-                if (selectedLesson?.id) {
-                  const gameResult = {
-                    score: result.score || 0,
-                    total: result.total || 0,
-                    timeSpent: result.timeSpent || 0,
-                    lessonTitle: selectedLesson.title,
-                    subject: selectedSubject,
-                    level: selectedSubLevel || selectedLevel
-                  };
-                  updateProgress(selectedLesson.id, true, gameResult);
+          {view === 'levels' && (
+            <LevelsList
+              query={query}
+              onSelect={(lvl) => {
+                setSelectedLevel(lvl.id);
+                if (lvl.id === 'primaire') {
+                  setView('primaire-sublevels');
+                } else if (lvl.id === 'college') {
+                  setView('college-sublevels');
+                } else if (lvl.id === 'lycee') {
+                  setView('lycee-sublevels');
+                } else {
+                  setView('subjects');
                 }
-                setView('content');
-                setSelectedLesson(null);
-              }}
-            />
-          ) : selectedLesson.id === 'cm1-fractions' ? (
-            <FractionsGameCM1
-              onGameEnd={(result) => {
-                if (selectedLesson?.id) {
-                  const gameResult = {
-                    score: result.score || 0,
-                    total: result.total || 0,
-                    timeSpent: result.timeSpent || 0,
-                    lessonTitle: selectedLesson.title,
-                    subject: selectedSubject,
-                    level: selectedSubLevel || selectedLevel
-                  };
-                  updateProgress(selectedLesson.id, true, gameResult);
-                }
-                setView('content');
-                setSelectedLesson(null);
-              }}
-            />
-          ) : (
-            <VectorCoordinatesGame
-              onGameEnd={(result) => {
-                if (selectedLesson?.id) {
-                  const gameResult = {
-                    score: result.score || 0,
-                    total: result.total || 0,
-                    timeSpent: result.timeSpent || 0,
-                    lessonTitle: selectedLesson.title,
-                    subject: selectedSubject,
-                    level: selectedSubLevel || selectedLevel
-                  };
-                  updateProgress(selectedLesson.id, true, gameResult);
-                }
-                setView('content');
-                setSelectedLesson(null);
+                setQuery('');
               }}
             />
           )}
-        </View>
-      )}
+
+          {view === 'primaire-sublevels' && (
+            <SubLevelsList
+              query={query}
+              subLevels={PRIMAIRE_SUBLEVELS}
+              onSelect={(subLevel) => {
+                setSelectedSubLevel(subLevel.id);
+                setView('subjects');
+                setQuery('');
+              }}
+            />
+          )}
+
+          {view === 'college-sublevels' && (
+            <SubLevelsList
+              query={query}
+              subLevels={COLLEGE_SUBLEVELS}
+              onSelect={(subLevel) => {
+                setSelectedSubLevel(subLevel.id);
+                setView('subjects');
+                setQuery('');
+              }}
+            />
+          )}
+
+          {view === 'lycee-sublevels' && (
+            <SubLevelsList
+              query={query}
+              subLevels={LYCEE_SUBLEVELS}
+              onSelect={(subLevel) => {
+                setSelectedSubLevel(subLevel.id);
+                setView('subjects');
+                setQuery('');
+              }}
+            />
+          )}
+
+          {view === 'subjects' && (selectedLevel || selectedSubLevel) && (
+            <SubjectsList
+              level={selectedSubLevel || selectedLevel}
+              query={query}
+              onSelect={(subject) => {
+                setSelectedSubject(subject.id);
+                setView('content');
+              }}
+            />
+          )}
+
+          {view === 'content' && (selectedLevel || selectedSubLevel) && selectedSubject && (
+            <ContentList
+              level={selectedSubLevel || selectedLevel}
+              subject={selectedSubject}
+              progress={progress}
+              onViewLesson={(lesson) => {
+                setSelectedLesson(lesson);
+                setView('lesson');
+              }}
+              onStartQuiz={(lesson) => {
+                setSelectedLesson(lesson);
+                setView('quiz');
+              }}
+              onStartGame={(lesson) => {
+                setSelectedLesson(lesson);
+                setView('game');
+              }}
+            />
+          )}
+
+          {view === 'lesson' && selectedLesson && (
+            <LessonView
+              lesson={selectedLesson}
+              onBack={() => setView('content')}
+            />
+          )}
+
+          {view === 'quiz' && selectedLesson && (
+            <QuizView
+              lesson={selectedLesson}
+              onDone={(score) => {
+                if (selectedLesson?.id) {
+                  const result = {
+                    score: score.correct || score.score || 0,
+                    total: score.total || score.questions?.length || 0,
+                    timeSpent: score.timeSpent || 0,
+                    lessonTitle: selectedLesson.title,
+                    subject: selectedSubject,
+                    level: selectedSubLevel || selectedLevel
+                  };
+                  updateProgress(selectedLesson.id, true, result);
+                }
+                setView('content');
+                setSelectedLesson(null);
+              }}
+              onOpenGame={() => {
+                // Open the associated game (keeps selectedLesson)
+                setView('game');
+              }}
+            />
+          )}
+
+          {view === 'game' && selectedLesson && (
+            <View style={{ flex: 1 }}>
+              {selectedLesson.id === '2nde-vecteurs' ? (
+                <VectorGamePlane
+                  onGameEnd={(result) => {
+                    if (selectedLesson?.id) {
+                      const gameResult = {
+                        score: result.score || 0,
+                        total: result.total || 0,
+                        timeSpent: result.timeSpent || 0,
+                        lessonTitle: selectedLesson.title,
+                        subject: selectedSubject,
+                        level: selectedSubLevel || selectedLevel
+                      };
+                      updateProgress(selectedLesson.id, true, gameResult);
+                    }
+                    setView('content');
+                    setSelectedLesson(null);
+                  }}
+                />
+              ) : selectedLesson.id === 'cm1-fractions' ? (
+                <FractionsGameCM1
+                  onGameEnd={(result) => {
+                    if (selectedLesson?.id) {
+                      const gameResult = {
+                        score: result.score || 0,
+                        total: result.total || 0,
+                        timeSpent: result.timeSpent || 0,
+                        lessonTitle: selectedLesson.title,
+                        subject: selectedSubject,
+                        level: selectedSubLevel || selectedLevel
+                      };
+                      updateProgress(selectedLesson.id, true, gameResult);
+                    }
+                    setView('content');
+                    setSelectedLesson(null);
+                  }}
+                />
+              ) : (
+                <VectorCoordinatesGame
+                  onGameEnd={(result) => {
+                    if (selectedLesson?.id) {
+                      const gameResult = {
+                        score: result.score || 0,
+                        total: result.total || 0,
+                        timeSpent: result.timeSpent || 0,
+                        lessonTitle: selectedLesson.title,
+                        subject: selectedSubject,
+                        level: selectedSubLevel || selectedLevel
+                      };
+                      updateProgress(selectedLesson.id, true, gameResult);
+                    }
+                    setView('content');
+                    setSelectedLesson(null);
+                  }}
+                />
+              )}
+            </View>
+          )}
         </>
       )}
     </View>
@@ -300,19 +300,19 @@ function labelForLevel(levelId) {
   // Chercher dans les niveaux principaux
   const level = LEVELS.find((l) => l.id === levelId);
   if (level) return level.label;
-  
+
   // Chercher dans les sous-niveaux du primaire
   const primaireSubLevel = PRIMAIRE_SUBLEVELS.find((sl) => sl.id === levelId);
   if (primaireSubLevel) return primaireSubLevel.label;
-  
+
   // Chercher dans les sous-niveaux du collège
   const collegeSubLevel = COLLEGE_SUBLEVELS.find((sl) => sl.id === levelId);
   if (collegeSubLevel) return collegeSubLevel.label;
-  
+
   // Chercher dans les sous-niveaux du lycée
   const lyceeSubLevel = LYCEE_SUBLEVELS.find((sl) => sl.id === levelId);
   if (lyceeSubLevel) return lyceeSubLevel.label;
-  
+
   return '';
 }
 
@@ -423,15 +423,15 @@ function ContentList({ level, subject, progress, onViewLesson, onStartQuiz, onSt
     // Géométrie
     organizedData.push({ type: 'header', title: '🔺 GÉOMÉTRIE' });
     lessons.slice(0, 5).forEach(item => organizedData.push({ type: 'chapter', ...item }));
-    
+
     // Algèbre
     organizedData.push({ type: 'header', title: '🧮 ALGÈBRE' });
     lessons.slice(5, 10).forEach(item => organizedData.push({ type: 'chapter', ...item }));
-    
+
     // Statistiques et Probabilités
     organizedData.push({ type: 'header', title: '📊 STATISTIQUES ET PROBABILITÉS' });
     lessons.slice(10, 12).forEach(item => organizedData.push({ type: 'chapter', ...item }));
-    
+
     // Applications numériques
     organizedData.push({ type: 'header', title: '💯 APPLICATIONS NUMÉRIQUES' });
     lessons.slice(12).forEach(item => organizedData.push({ type: 'chapter', ...item }));
@@ -490,7 +490,7 @@ function ChapterCard({ title, hasLesson, hasQuiz, hasGame, completed, onViewLess
         <Text style={styles.chapterTitle}>{title}</Text>
         {completed ? <Badge text="Terminé" /> : null}
       </View>
-      
+
       <View style={styles.buttonContainer}>
         {hasLesson ? (
           <TouchableOpacity onPress={onViewLesson} style={[styles.actionBtn, styles.lessonBtn]}>
@@ -501,7 +501,7 @@ function ChapterCard({ title, hasLesson, hasQuiz, hasGame, completed, onViewLess
             <Text style={styles.disabledBtnText}>📖 Leçon (bientôt)</Text>
           </View>
         )}
-        
+
         {hasQuiz ? (
           <TouchableOpacity onPress={onStartQuiz} style={[styles.actionBtn, styles.quizBtn]}>
             <Text style={styles.quizBtnText}>🎯 Exercices</Text>
