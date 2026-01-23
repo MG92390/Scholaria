@@ -1,4 +1,10 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "paths": {
+      "@firebase/auth": [
+        "./node_modules/@firebase/auth/dist/rn/index.js"
+      ]
+    }
+  },
   "extends": "expo/tsconfig.base"
 }
