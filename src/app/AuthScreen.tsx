@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, Dimensions } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../../firebase/config';
+import { auth, db } from '../firebase/config';
 import { LinearGradient } from 'expo-linear-gradient';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import FirebaseErrorHelper from '../ui/FirebaseErrorHelper';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import FirebaseErrorHelper from '../components/ui/FirebaseErrorHelper';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from '@firebase/auth';
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +32,7 @@ export default function AuthScreen({ onAuthSuccess }) {
       } else {
         // Inscription
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
+
         // Créer le profil utilisateur dans Firestore
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           name: name,
@@ -47,7 +47,7 @@ export default function AuthScreen({ onAuthSuccess }) {
       }
     } catch (error) {
       let errorMessage = 'Une erreur est survenue';
-      
+
       switch (error.code) {
         case 'auth/user-not-found':
           errorMessage = 'Aucun compte trouvé avec cet email';
@@ -67,7 +67,7 @@ export default function AuthScreen({ onAuthSuccess }) {
         default:
           errorMessage = error.message;
       }
-      
+
       setAuthError(error.code || error.message);
       Alert.alert('Erreur', errorMessage);
     }
@@ -88,91 +88,91 @@ export default function AuthScreen({ onAuthSuccess }) {
           <Text style={styles.subtitle}>Votre plateforme d'apprentissage personnalisée</Text>
         </View>
 
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>
-          {isLogin ? 'Connexion' : 'Créer un compte'}
-        </Text>
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>
+            {isLogin ? 'Connexion' : 'Créer un compte'}
+          </Text>
 
-        {!isLogin && (
+          {!isLogin && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Nom complet</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Votre nom complet"
+                autoCapitalize="words"
+              />
+            </View>
+          )}
+
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Nom complet</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Votre nom complet"
-              autoCapitalize="words"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="votre.email@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
             />
           </View>
-        )}
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="votre.email@example.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Mot de passe</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Votre mot de passe"
+              secureTextEntry
+              autoComplete="password"
+            />
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Mot de passe</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Votre mot de passe"
-            secureTextEntry
-            autoComplete="password"
-          />
-        </View>
+          <TouchableOpacity
+            style={[styles.authButton, loading && styles.disabledButton]}
+            onPress={handleAuth}
+            disabled={loading}
+          >
+            {loading ? (
+              <LoadingSpinner size={24} color="#ffffff" />
+            ) : (
+              <Text style={styles.authButtonText}>
+                {isLogin ? 'Se connecter' : 'S\'inscrire'}
+              </Text>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.authButton, loading && styles.disabledButton]} 
-          onPress={handleAuth}
-          disabled={loading}
-        >
-          {loading ? (
-            <LoadingSpinner size={24} color="#ffffff" />
-          ) : (
-            <Text style={styles.authButtonText}>
-              {isLogin ? 'Se connecter' : 'S\'inscrire'}
+          <TouchableOpacity
+            style={styles.switchButton}
+            onPress={() => setIsLogin(!isLogin)}
+          >
+            <Text style={styles.switchButtonText}>
+              {isLogin
+                ? 'Pas encore de compte ? S\'inscrire'
+                : 'Déjà un compte ? Se connecter'}
             </Text>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.switchButton}
-          onPress={() => setIsLogin(!isLogin)}
-        >
-          <Text style={styles.switchButtonText}>
-            {isLogin 
-              ? 'Pas encore de compte ? S\'inscrire' 
-              : 'Déjà un compte ? Se connecter'}
-          </Text>
-        </TouchableOpacity>
+          <FirebaseErrorHelper error={authError} />
+        </View>
 
-        <FirebaseErrorHelper error={authError} />
-      </View>
-
-      <View style={styles.features}>
-        <Text style={styles.featuresTitle}>Avec Scholaria :</Text>
-        <View style={styles.featureItem}>
-          <Text style={styles.featureEmoji}>📈</Text>
-          <Text style={styles.featureText}>Suivez votre progression</Text>
-        </View>
-        <View style={styles.featureItem}>
-          <Text style={styles.featureEmoji}>🎮</Text>
-          <Text style={styles.featureText}>Apprenez en jouant</Text>
-        </View>
-        <View style={styles.featureItem}>
-          <Text style={styles.featureEmoji}>🏆</Text>
-          <Text style={styles.featureText}>Gagnez des badges</Text>
-        </View>
+        <View style={styles.features}>
+          <Text style={styles.featuresTitle}>Avec Scholaria :</Text>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>📈</Text>
+            <Text style={styles.featureText}>Suivez votre progression</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>🎮</Text>
+            <Text style={styles.featureText}>Apprenez en jouant</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>🏆</Text>
+            <Text style={styles.featureText}>Gagnez des badges</Text>
+          </View>
         </View>
       </ScrollView>
     </LinearGradient>
